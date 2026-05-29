@@ -1,20 +1,63 @@
-# 🐹 Golang Interview Questions — 100 вопросов с разбором
+# 🐹 Golang Interview Questions — 120 вопросов с разбором
 
 > Профессиональный сборник вопросов с собеседований Go: от Junior до Senior. Каждый вопрос — с кратким разбором здесь и полным анализом в отдельном файле.
 
-![Go](https://img.shields.io/badge/Go-1.23+-00ADD8?style=flat-square&logo=go) ![Level](https://img.shields.io/badge/level-Junior%20→%20Senior-blue?style=flat-square) ![Lang](https://img.shields.io/badge/lang-RU-red?style=flat-square) ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+> 📡 **Главный TG-канал по Go**: [@Golang_google](https://t.me/Golang_google) — новости релизов, разборы, вакансии. Подписывайтесь, чтобы держать руку на пульсе.
+
+## 📖 О чём это
+
+Этот репозиторий — структурированный конспект для подготовки к Go-собеседованиям и для повседневной работы. Я собрал **120 вопросов** в 9 категорий: от синтаксиса до runtime, GC, продакшен-паттернов и новых фич Go 1.21–1.24.
+
+Каждый вопрос даётся в двух уровнях детализации:
+
+- **TL;DR в README** — 1–3 предложения с сутью. Достаточно, чтобы за 1 день освежить ключевые термины перед интервью.
+- **Полный разбор в отдельном файле** — таблицы сравнения, примеры кода с Go 1.22+, антипаттерн → правильный вариант, подводные камни.
+
+**Уровни сложности** размечены эмодзи:
+
+- 🟢 **Junior** — обязан знать на любом Go-собеседовании. Синтаксис, типы, базовые конструкции.
+- 🟡 **Middle** — типовые вопросы для 1–3 лет коммерческого опыта. Concurrency, интерфейсы, error handling.
+- 🔴 **Senior** — глубокое понимание runtime, GC, memory model, production-паттернов.
+
+**Что внутри каждого ответа:**
+
+- Go-код с современным синтаксисом (1.21–1.24): `slog`, `slices`, `maps`, `iter`, generic type aliases, новый HTTP-роутер.
+- Сравнительные таблицы (когда что использовать).
+- ❌ Антипаттерн → ✅ Правильно — с объяснением, почему так.
+- Pitfalls — типичные ошибки на собеседовании и в проде.
+- Ссылки на официальную документацию и release notes.
+
+**Стек и инструменты:**
+
+- Go 1.21–1.24 (актуальные релизы на 2024–2025).
+- Testing: standard `testing`, `testify`, fuzzing, `-race`, `testing/synctest`.
+- Profiling: `pprof`, `trace`, PGO.
+- Observability: `log/slog`, OpenTelemetry, Prometheus client.
+- Linters: `go vet`, `staticcheck`, `golangci-lint`.
+
+**Для кого:**
+
+- Junior, которому нужно подготовиться к первому собеседованию.
+- Middle/Senior, переходящему в новую компанию — освежить знания за 1–2 недели.
+- Опытному разработчику, который хочет проверить, не упустил ли новые фичи языка.
+- Интервьюеру — готовый банк вопросов для скрининга.
+
+![Go](https://img.shields.io/badge/Go-1.21--1.24-00ADD8?style=flat-square&logo=go) ![Level](https://img.shields.io/badge/level-Junior%20→%20Senior-blue?style=flat-square) ![Questions](https://img.shields.io/badge/questions-120-orange?style=flat-square) ![Lang](https://img.shields.io/badge/lang-RU-red?style=flat-square) ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
 ---
 
 ## 📚 Как пользоваться
 
-- 🟢 **Junior** — обязан знать на любом Go-собеседовании.
-- 🟡 **Middle** — типовые вопросы для коммерческого опыта 1–3 года.
-- 🔴 **Senior** — глубокое понимание runtime, GC, memory model.
-
 Под каждым вопросом — **TL;DR** (короткий разбор) и ссылка **→ Полный разбор** на файл с кодом, таблицами, примерами и подводными камнями.
 
 📂 Все файлы лежат в [`questions/`](questions/).
+
+**Стратегия за разное время:**
+
+- **2 недели до собеса** — пройти все 120 вопросов, для каждого ❓ разобрать полный файл.
+- **1 неделя** — TL;DR всех + полные разборы 🔴 Senior-тем (Q41–Q60, Q81–Q120).
+- **3 дня** — только TL;DR + полный разбор concurrency (Q41–Q60) и новых версий (Q101–Q120).
+- **За день** — пробежать TL;DR в этом README, освежить термины.
 
 ---
 
@@ -164,7 +207,7 @@
 
 ### Q24. Что такое type alias и type definition?
 
-**TL;DR:** `type A = B` (alias) — то же самое, взаимозаменяемо. `type A B` (definition) — новый тип, нужен explicit cast, можно навешивать методы. Alias введён в Go 1.9.
+**TL;DR:** `type A = B` (alias) — то же самое, взаимозаменяемо. `type A B` (definition) — новый тип, нужен explicit cast, можно навешивать методы. Alias введён в Go 1.9, generic aliases — в 1.24.
 
 → [Полный разбор](questions/02-types-memory.md#q24)
 
@@ -222,7 +265,7 @@
 
 ### Q33. Как устроена map внутри?
 
-**TL;DR:** Hash table с bucket-ами (по 8 элементов). При collision — chain. При load factor > 6.5 — растёт ×2 (incremental rehash). Ключи должны быть comparable.
+**TL;DR:** Hash table с bucket-ами. До 1.24 — открытая адресация, с 1.24 — Swiss tables (быстрее). Ключи должны быть comparable. При load factor превышен — растёт ×2 (incremental rehash).
 
 → [Полный разбор](questions/03-slices-maps.md#q33)
 
@@ -650,29 +693,175 @@
 
 ---
 
+## 🆕 Новые версии Go: 1.21–1.24 (Q101–Q120) — [полный файл](questions/09-modern-go.md)
+
+### Q101. Что нового в Go 1.21? Главные фичи
+
+**TL;DR:** Пакеты `log/slog`, `slices`, `maps`, `cmp`; встроенные `min`, `max`, `clear`; `sync.OnceFunc/OnceValue/OnceValues`; `context.WithoutCancel`, `AfterFunc`; PGO production-ready; `GOMEMLIMIT`.
+
+→ [Полный разбор](questions/09-modern-go.md#q101)
+
+### Q102. Что такое log/slog и зачем он нужен?
+
+**TL;DR:** Стандартный structured logger из Go 1.21. Уровни (Debug/Info/Warn/Error), атрибуты, handlers (TextHandler, JSONHandler), groups, дочерние логгеры через `With`. Заменяет `log` для прод-систем.
+
+→ [Полный разбор](questions/09-modern-go.md#q102)
+
+### Q103. Что такое slices и maps пакеты?
+
+**TL;DR:** Generic-утилиты: `slices.Sort/Contains/Clone/Equal/Delete`, `maps.Keys/Values/Clone/Equal`. Заменяют ручные циклы. В Go 1.23 `maps.Keys` стал возвращать `iter.Seq` вместо слайса.
+
+→ [Полный разбор](questions/09-modern-go.md#q103)
+
+### Q104. Что такое sync.OnceFunc / OnceValue / OnceValues?
+
+**TL;DR:** Обёртки над `sync.Once`: возвращают функцию, тело которой выполнится один раз. Удобно для lazy-инициализации синглтонов, кешей, конфига. Если функция паникует — panic кешируется.
+
+→ [Полный разбор](questions/09-modern-go.md#q104)
+
+### Q105. Что нового в Go 1.22?
+
+**TL;DR:** Главное — **исправление loop variable capture** (каждая итерация — новая переменная), `for i := range 10`, улучшенный HTTP-роутер с паттернами/методами, `math/rand/v2`, `slices.Concat`, `cmp.Or`.
+
+→ [Полный разбор](questions/09-modern-go.md#q105)
+
+### Q106. Что такое router в net/http Go 1.22? Зачем нужен сторонний?
+
+**TL;DR:** Встроенный `http.ServeMux` получил паттерны `METHOD /path/{var}` и приоритеты. Покрывает 80% задач. Третьесторонние (chi/echo/gin) — для middleware-цепочек, regex, group-routing, биндинга.
+
+→ [Полный разбор](questions/09-modern-go.md#q106)
+
+### Q107. Что такое range-over-func в Go 1.23?
+
+**TL;DR:** `for x := range fn` где fn — функция типа `iter.Seq[T]` или `iter.Seq2[K,V]`. Унифицирует пользовательские итераторы. yield возвращает bool — потребитель может прервать через break.
+
+→ [Полный разбор](questions/09-modern-go.md#q107)
+
+### Q108. Что такое unique пакет и weak.Pointer?
+
+**TL;DR:** `unique.Make(x)` (1.23) — интернирование сравнимых значений: одинаковые строки/структуры хранятся в одном экземпляре. `weak.Pointer` (1.24) — слабая ссылка, не удерживает объект от GC. Для кешей и observable.
+
+→ [Полный разбор](questions/09-modern-go.md#q108)
+
+### Q109. Что такое Generic Type Aliases (Go 1.24)?
+
+**TL;DR:** Aliases теперь могут быть параметризованы дженериками: `type Set[T comparable] = map[T]struct{}`. Раньше дженерики работали только в type definitions.
+
+→ [Полный разбор](questions/09-modern-go.md#q109)
+
+### Q110. Что такое Swiss Tables в Go 1.24?
+
+**TL;DR:** Переписанная реализация `map` на алгоритме Google. SIMD-friendly probing, меньше памяти, lookups быстрее на 5–60%. API не изменился — просто пересобрать. Concurrent writes по-прежнему fatal.
+
+→ [Полный разбор](questions/09-modern-go.md#q110)
+
+### Q111. Что такое testing/synctest (Go 1.24 experimental)?
+
+**TL;DR:** Виртуальное время и контролируемая блокировка для детерминированного тестирования конкурентного кода. Решает flaky tests с `time.Sleep`. Включается через `GOEXPERIMENT=synctest`.
+
+→ [Полный разбор](questions/09-modern-go.md#q111)
+
+### Q112. Какие новые проверки появились в go vet (1.22-1.24)?
+
+**TL;DR:** В 1.23 — `stdversion` (использование фич, недоступных по `go` директиве). Усилены `printf`, `copylocks`. Loopclosure стал почти ненужен после фикса на уровне языка.
+
+→ [Полный разбор](questions/09-modern-go.md#q112)
+
+### Q113. Что такое GOTOOLCHAIN?
+
+**TL;DR:** Go 1.21+ автоматически подкачивает нужную версию toolchain по `go.mod` (директива `toolchain go1.23.4`). Значения: `auto` (default), `local`, явная версия. В CI/Docker — `local`.
+
+→ [Полный разбор](questions/09-modern-go.md#q113)
+
+### Q114. Что такое iter.Pull / iter.Pull2?
+
+**TL;DR:** Превращает push-итератор (`iter.Seq`) в pull: функцию `next() (T, bool)`. Нужно для ручного контроля (merge двух потоков, lookahead). `stop()` нужно вызывать обязательно.
+
+→ [Полный разбор](questions/09-modern-go.md#q114)
+
+### Q115. Что нового в context (Go 1.21+)?
+
+**TL;DR:** `WithoutCancel` — наследует values, но не cancel. `AfterFunc` — регистрирует функцию на cancel. `WithCancelCause/Cause(ctx)` — кастомные причины отмены для логирования/метрик.
+
+→ [Полный разбор](questions/09-modern-go.md#q115)
+
+### Q116. Что такое min, max, clear builtins (Go 1.21)?
+
+**TL;DR:** Generic-builtins без импорта. `min/max` — variadic для Ordered. `clear(map)` удаляет ключи. `clear(slice)` обнуляет элементы (важно для GC указателей), len остаётся прежним.
+
+→ [Полный разбор](questions/09-modern-go.md#q116)
+
+### Q117. Что такое cmp.Or и зачем нужен?
+
+**TL;DR:** Go 1.22: `cmp.Or(a, b, c)` возвращает первый ненулевой аргумент. Эквивалент null-coalescing (??) из других языков. Полезно для дефолтов: `port := cmp.Or(envPort, "8080")`.
+
+→ [Полный разбор](questions/09-modern-go.md#q117)
+
+### Q118. Изменения в encoding/json в новых версиях?
+
+**TL;DR:** В 1.24 — `omitzero` тег (правильнее `omitempty` для time.Time и кастомных типов с `IsZero()`). Работа над `encoding/json/v2` (experimental, `GOEXPERIMENT=jsonv2`): быстрее, корректнее, streaming API.
+
+→ [Полный разбор](questions/09-modern-go.md#q118)
+
+### Q119. Что такое math/rand/v2?
+
+**TL;DR:** Go 1.22: новый API без глобального лока, на дженериках, с лучшим RNG (ChaCha8). `rand.IntN(n)`, `rand.N[T](n)`. Старый `math/rand` остался для совместимости. Для криптографии всё равно — `crypto/rand`.
+
+→ [Полный разбор](questions/09-modern-go.md#q119)
+
+### Q120. Какие best practices при миграции на новую версию Go?
+
+**TL;DR:** Поднимать `go` директиву в `go.mod` постепенно. Прогнать `go test -race -count=10 ./...`, `go vet ./...`. Особо тестировать места с горутинами + range (фикс 1.22). Включить PGO, `GOMEMLIMIT`, `slog`.
+
+→ [Полный разбор](questions/09-modern-go.md#q120)
+
+---
+
 ## 📦 Стек и версии
 
-- **Go 1.21–1.23** — современные фичи: `slog`, `clear()`, `slices`/`maps`, `sync.OnceValue`, PGO, `GOMEMLIMIT`, loop var scoping (1.22).
-- **Testing**: standard `testing`, `testify`, fuzzing, `-race`.
-- **Tooling**: `go vet`, `staticcheck`, `golangci-lint`, `pprof`.
+- **Go 1.21–1.24** — современные фичи: `slog`, `clear()`, `slices`/`maps`, `sync.OnceValue`, PGO, `GOMEMLIMIT`, loop var scoping (1.22), range-over-func (1.23), generic type aliases + Swiss tables (1.24).
+- **Testing**: standard `testing`, `testify`, fuzzing, `-race`, `testing/synctest`.
+- **Tooling**: `go vet`, `staticcheck`, `golangci-lint`, `pprof`, `go tool trace`.
 
 ---
 
-## 📡 Telegram-каналы для подготовки
+## 📡 Telegram-каналы для Go-разработчика
 
-Приоритетный порядок (бесплатные ресурсы):
+Приоритетный порядок (всё бесплатно):
 
-1. **[@ai_machinelearning_big_data](https://t.me/ai_machinelearning_big_data)** — ML/AI/big data, прикладной Go.
-2. **[@pythonl](https://t.me/pythonl)** — Python + общие practical posts (часто Go-сравнения).
-3. **[Папка каналов](https://t.me/addlist/8vDUwYRGujRmZjFi)** — подборка для системных и backend разработчиков.
+1. **[@Golang_google](https://t.me/Golang_google)** — главный русскоязычный TG по Go: новости релизов, разборы, фичи, вакансии.
+2. **[@ai_machinelearning_big_data](https://t.me/ai_machinelearning_big_data)** — ML/AI/big data, прикладной Go в инфраструктуре.
+3. **[@pythonl](https://t.me/pythonl)** — Python + общие practical posts, часто Go-сравнения и тулинг.
+4. **[Папка каналов](https://t.me/addlist/8vDUwYRGujRmZjFi)** — подборка для системных и backend разработчиков.
 
 ---
 
-## 🎯 Как использовать перед собеседованием
+## 🎯 План подготовки
 
-- За 1–2 недели: пройти все 100 вопросов, разобраться где плаваете.
-- За 3 дня: прогнать только 🔴 (Q41–Q60, Q81–Q100) — там обычно "режут".
-- За день: бегло пройти TL;DR в этом README — освежить термины.
+**За 2 недели:**
+
+- Дни 1–3: пройти Q1–Q40 (основы, типы, slices/maps) — полные разборы.
+- Дни 4–7: Q41–Q60 concurrency — тут "режут" чаще всего, прорешать примеры.
+- Дни 8–10: Q61–Q90 интерфейсы, ошибки, runtime/GC — таблицы и подводные камни.
+- Дни 11–13: Q91–Q120 production + новые версии Go — освежить.
+- День 14: пробег TL;DR + проверка слабых мест.
+
+**За неделю** — фокус на 🔴 Senior: Q41–Q60, Q81–Q120.
+
+**За 3 дня** — TL;DR всех + полные разборы concurrency (Q41–Q60) и новых версий (Q101–Q120). Часто спрашивают, "что нового в Go" — это сильно выделяет.
+
+**За день** — пробег README, освежить термины. Особое внимание Q63 (nil interface), Q41-Q45 (goroutines/channels), Q105 (loop var), Q107 (iter.Seq).
+
+---
+
+## 🤝 Вклад
+
+Нашли ошибку или хотите добавить вопрос — открывайте issue/PR. Принимаются:
+
+- Новые вопросы (с разбором по шаблону).
+- Уточнения существующих ответов.
+- Примеры кода из реальной практики.
+- Опечатки.
 
 ---
 
